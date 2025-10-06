@@ -2,5 +2,6 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/44abfe80-4cbb-46c1-886b-4c55bed7317c/console.sql" value="44abfe80-4cbb-46c1-886b-4c55bed7317c" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/gcash/app/Security/UserAuthentication.java" value="44abfe80-4cbb-46c1-886b-4c55bed7317c" />
   </component>
 </project>
