@@ -1,9 +1,9 @@
 package com.gcash.app;
 
+import java.util.Scanner;
+
 import com.gcash.app.Model.Users;
 import com.gcash.app.Security.UserAuthentication;
-
-import java.util.Scanner;
 
 public class GcashApp {
     private static final UserAuthentication auth = new UserAuthentication();
@@ -11,7 +11,7 @@ public class GcashApp {
     private static int currentUserId = -1;
 
     public static void main(String[] args) {
-        System.out.println("Welcome to Gcash App!");
+        System.out.println("Welcome to GCash App!");
 
         while (true) {
             if (currentUserId == -1) {
@@ -23,15 +23,16 @@ public class GcashApp {
             }
         }
     }
-    private  static void showMainMenu(){
-        System.out.println("\nPlease select an option: ");
+
+    private static void showMainMenu() {
+        System.out.println("\nPlease select an option:");
         System.out.println("1. Register");
         System.out.println("2. Login");
         System.out.println("3. Exit");
-        System.out.println("Choice: ");
+        System.out.print("Choice: ");
 
         int choice = scanner.nextInt();
-        scanner.nextLine();
+        scanner.nextLine(); // Clear the newline
 
         switch (choice) {
             case 1:
@@ -48,7 +49,8 @@ public class GcashApp {
                 System.out.println("Invalid choice. Please try again.");
         }
     }
-    private static void showLoggedInMenu(){
+
+    private static void showLoggedInMenu() {
         System.out.println("\nUser Menu (ID: " + currentUserId + ")");
         System.out.println("1. Change PIN");
         System.out.println("2. Logout");
@@ -73,6 +75,7 @@ public class GcashApp {
                 System.out.println("Invalid choice. Please try again.");
         }
     }
+
     private static void registerUser() {
         System.out.println("\n=== User Registration ===");
 
@@ -85,7 +88,7 @@ public class GcashApp {
         System.out.print("Phone Number: ");
         String number = scanner.nextLine();
 
-        System.out.print("PIN (4-6 digits): ");
+        System.out.print("PIN (4 digits): ");
         String pin = scanner.nextLine();
 
         Users newUser = new Users(name, email, number, pin);
