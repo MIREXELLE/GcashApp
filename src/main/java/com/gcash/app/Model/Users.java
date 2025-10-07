@@ -1,6 +1,5 @@
 package com.gcash.app.Model;
 
-
 public class Users {
     private int id;
     private String name;
@@ -8,13 +7,14 @@ public class Users {
     private String number;
     private String pin;
 
+    // Constructor
     public Users() {}
 
-    public Users(String pin, String number, String email, String name) {
-        this.pin = pin;
-        this.number = number;
-        this.email = email;
+    public Users(String name, String email, String number, String pin) {
         this.name = name;
+        this.email = email;
+        this.number = number;
+        this.pin = pin;
     }
 
     public Users(int id, String name, String email, String number, String pin) {
@@ -25,6 +25,7 @@ public class Users {
         this.pin = pin;
     }
 
+    // Getters and Setters
     public int getId() {
         return id;
     }
