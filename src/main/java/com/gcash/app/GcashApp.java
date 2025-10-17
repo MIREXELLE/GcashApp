@@ -4,6 +4,8 @@ import java.util.Scanner;
 
 import com.gcash.app.Model.Users;
 import com.gcash.app.Security.UserAuthentication;
+import com.gcash.app.Service.BalanceService;
+import com.gcash.app.Model.CheckBalance;
 
 public class GcashApp {
     private static final UserAuthentication auth = new UserAuthentication();
@@ -53,8 +55,9 @@ public class GcashApp {
     private static void showLoggedInMenu() {
         System.out.println("\nUser Menu (ID: " + currentUserId + ")");
         System.out.println("1. Change PIN");
-        System.out.println("2. Logout");
-        System.out.println("3. Exit");
+        System.out.println("2. Check Balance"); // New option
+        System.out.println("3. Logout");
+        System.out.println("4. Exit");
         System.out.print("Choice: ");
 
         int choice = scanner.nextInt();
@@ -65,9 +68,12 @@ public class GcashApp {
                 changeUserPin();
                 break;
             case 2:
-                logoutUser();
+                checkUserBalance(); // New method call
                 break;
             case 3:
+                logoutUser();
+                break;
+            case 4:
                 System.out.println("Thank you for using GCash App. Goodbye!");
                 System.exit(0);
                 break;
@@ -143,6 +149,18 @@ public class GcashApp {
             System.out.println("PIN changed successfully!");
         } else {
             System.out.println("Failed to change PIN. Please verify your current PIN is correct.");
+        }
+    }
+
+    private static void checkUserBalance() {
+        System.out.println("\n=== Check Balance ===");
+
+        CheckBalance balance = BalanceService.checkBalance(currentUserId);
+
+        if (balance != null) {
+            System.out.println("Your current balance: ₱" + String.format("%.2f", balance.getAmount()));
+        } else {
+            System.out.println("Unable to retrieve your balance. Please try again later.");
         }
     }
 
