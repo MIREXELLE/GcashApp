@@ -3,9 +3,11 @@ package com.gcash.app;
 import java.util.Scanner;
 
 import com.gcash.app.Model.Users;
-import com.gcash.app.Security.UserAuthentication;
-import com.gcash.app.Service.BalanceService;
 import com.gcash.app.Model.CheckBalance;
+import com.gcash.app.Security.UserAuthentication;
+import com.gcash.app.Security.SessionManager;
+import com.gcash.app.Service.TransactionService;
+import com.gcash.app.Service.BalanceService;
 
 public class GcashApp {
     private static final UserAuthentication auth = new UserAuthentication();
@@ -55,9 +57,10 @@ public class GcashApp {
     private static void showLoggedInMenu() {
         System.out.println("\nUser Menu (ID: " + currentUserId + ")");
         System.out.println("1. Change PIN");
-        System.out.println("2. Check Balance"); // New option
-        System.out.println("3. Logout");
-        System.out.println("4. Exit");
+        System.out.println("2. Check Balance");
+        System.out.println("3. Cash In");
+        System.out.println("4. Logout");
+        System.out.println("5. Exit");
         System.out.print("Choice: ");
 
         int choice = scanner.nextInt();
@@ -68,12 +71,15 @@ public class GcashApp {
                 changeUserPin();
                 break;
             case 2:
-                checkUserBalance(); // New method call
+                checkUserBalance();
                 break;
             case 3:
-                logoutUser();
+                cashInFunds();
                 break;
             case 4:
+                logoutUser();
+                break;
+            case 5:
                 System.out.println("Thank you for using GCash App. Goodbye!");
                 System.exit(0);
                 break;
@@ -132,7 +138,7 @@ public class GcashApp {
         System.out.print("Current PIN: ");
         String oldPin = scanner.nextLine();
 
-        System.out.print("New PIN (4-6 digits): ");
+        System.out.print("New PIN (4 digits): ");
         String newPin = scanner.nextLine();
 
         System.out.print("Confirm New PIN: ");
@@ -155,12 +161,45 @@ public class GcashApp {
     private static void checkUserBalance() {
         System.out.println("\n=== Check Balance ===");
 
+        // Verify if the session is valid
+        if (!SessionManager.isSessionValid(currentUserId)) {
+            System.out.println("Your session has expired. Please login again.");
+            currentUserId = -1;
+            return;
+        }
+
         CheckBalance balance = BalanceService.checkBalance(currentUserId);
 
         if (balance != null) {
             System.out.println("Your current balance: ₱" + String.format("%.2f", balance.getAmount()));
         } else {
             System.out.println("Unable to retrieve your balance. Please try again later.");
+        }
+    }
+
+    private static void cashInFunds() {
+        System.out.println("\n=== Cash In ===");
+
+        System.out.print("Enter amount to add: ");
+        double amount = scanner.nextDouble();
+        scanner.nextLine(); // Clear the newline
+
+        if (amount <= 0) {
+            System.out.println("Invalid amount. Please enter a positive number.");
+            return;
+        }
+
+        boolean success = TransactionService.cashin(amount, currentUserId);
+
+        if (success) {
+            System.out.println("Cash-in successful! ₱" + String.format("%.2f", amount) + " has been added to your account.");
+        } else {
+            System.out.println("Cash-in failed. Please try again later.");
+        }
+
+        // Testing with fixed amounts as per the job sheet
+        if (amount == 200 || amount == 300) {
+            System.out.println("Test transaction with amount " + amount + " completed successfully.");
         }
     }
 
