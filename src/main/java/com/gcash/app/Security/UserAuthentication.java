@@ -135,7 +135,7 @@ public class UserAuthentication {
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(
-             "SELECT id FROM users WHERE (email = ? OR number = ?) AND pin = ?")) {
+                     "SELECT id FROM users WHERE (email = ? OR number = ?) AND pin = ?")) {
 
             pstmt.setString(1, userIdentifier);
             pstmt.setString(2, userIdentifier);
@@ -215,14 +215,12 @@ public class UserAuthentication {
     }
 
     /**
-     * Logout the user (in a real application, this would invalidate session)
+     * Logout the user by invalidating their session
      * @param userId User ID
      * @return true if successful, false otherwise
      */
     public boolean logout(int userId) {
-        // In a real application, you would invalidate the user's session
-        // For this example, we'll just return true if the user ID is valid
-        return userId > 0;
+        return SessionManager.invalidateSession(userId);
     }
 
     /**
