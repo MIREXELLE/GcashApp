@@ -1,9 +1,11 @@
 package com.gcash.app;
 
+import java.util.List;
 import java.util.Scanner;
 
 import com.gcash.app.Model.Users;
 import com.gcash.app.Model.CheckBalance;
+import com.gcash.app.Model.Transactions;
 import com.gcash.app.Security.UserAuthentication;
 import com.gcash.app.Security.SessionManager;
 import com.gcash.app.Service.TransactionService;
@@ -60,8 +62,9 @@ public class GcashApp {
         System.out.println("2. Check Balance");
         System.out.println("3. Cash In");
         System.out.println("4. Cash Transfer");
-        System.out.println("5. Logout");
-        System.out.println("6. Exit");
+        System.out.println("5. View Transactions");
+        System.out.println("6. Logout");
+        System.out.println("7. Exit");
         System.out.print("Choice: ");
 
         int choice = scanner.nextInt();
@@ -81,9 +84,12 @@ public class GcashApp {
                 transferFunds();
                 break;
             case 5:
-                logoutUser();
+                viewTransactionsMenu();
                 break;
             case 6:
+                logoutUser();
+                break;
+            case 7:
                 System.out.println("Thank you for using GCash App. Goodbye!");
                 System.exit(0);
                 break;
@@ -283,6 +289,110 @@ public class GcashApp {
                 break;
             default:
                 System.out.println("Transfer failed due to a system error. Please try again later.");
+        }
+    }
+
+    private static void viewTransactionsMenu() {
+        System.out.println("\n=== View Transactions ===");
+
+        // Verify if the session is valid
+        if (!SessionManager.isSessionValid(currentUserId)) {
+            System.out.println("Your session has expired. Please login again.");
+            currentUserId = -1;
+            return;
+        }
+
+        System.out.println("1. View My Transactions");
+        System.out.println("2. View Specific Transaction");
+        System.out.println("3. View All Transactions (Admin)");
+        System.out.println("4. Back to Main Menu");
+        System.out.print("Choice: ");
+
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Clear the newline
+
+        switch (choice) {
+            case 1:
+                viewUserTransactions();
+                break;
+            case 2:
+                viewSpecificTransaction();
+                break;
+            case 3:
+                viewAllTransactions();
+                break;
+            case 4:
+                return;
+            default:
+                System.out.println("Invalid choice. Please try again.");
+        }
+    }
+
+    private static void viewUserTransactions() {
+        System.out.println("\n=== My Transactions ===");
+
+        List<Transactions> transactions = TransactionService.viewUserAll(currentUserId);
+
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions found.");
+            return;
+        }
+
+        System.out.println("Your transaction history:");
+        for (Transactions t : transactions) {
+            System.out.println(t.toString());
+        }
+    }
+
+    private static void viewSpecificTransaction() {
+        System.out.println("\n=== View Specific Transaction ===");
+
+        System.out.print("Enter transaction ID: ");
+        int transactionId = scanner.nextInt();
+        scanner.nextLine(); // Clear the newline
+
+        Transactions transaction = TransactionService.viewTransaction(transactionId);
+
+        if (transaction == null) {
+            System.out.println("Transaction not found.");
+            return;
+        }
+
+        // Check if the transaction belongs to the current user
+        if (transaction.getAccount_id() != currentUserId) {
+            System.out.println("You can only view your own transactions.");
+            return;
+        }
+
+        System.out.println("Transaction details:");
+        System.out.println(transaction.toString());
+    }
+
+    private static void viewAllTransactions() {
+        System.out.println("\n=== All Transactions (Admin View) ===");
+
+        // In a real app, you would check if the user has admin privileges
+        // For this example, we'll just show a warning
+        System.out.println("WARNING: This is an administrative function");
+        System.out.print("Enter admin password: ");
+        String password = scanner.nextLine();
+
+        // Simple admin check - in a real app this would be more secure
+        if (!password.equals("admin")) {
+            System.out.println("Access denied.");
+            return;
+        }
+
+        List<Transactions> transactions = TransactionService.viewAll();
+
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions found in the system.");
+            return;
+        }
+
+        System.out.println("All transactions in the system:");
+        for (Transactions t : transactions) {
+            System.out.println(t.toString());
         }
     }
 

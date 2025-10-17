@@ -6,10 +6,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.gcash.app.Model.Cashin;
 import com.gcash.app.Model.CashTransfer;
 import com.gcash.app.Model.CheckBalance;
+import com.gcash.app.Model.Transactions;
 import com.gcash.app.util.DatabaseConnection;
 
 public class TransactionService {
@@ -281,5 +284,114 @@ public class TransactionService {
                 System.err.println("Error closing connection: " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * View all transactions in the system
+     * @return List of all transactions
+     */
+    public static List<Transactions> viewAll() {
+        List<Transactions> transactionList = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM transaction ORDER BY date DESC")) {
+
+            while (rs.next()) {
+                Transactions transaction = mapResultSetToTransaction(rs);
+                transactionList.add(transaction);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving transactions: " + e.getMessage());
+        }
+
+        return transactionList;
+    }
+
+    /**
+     * View all transactions for a specific user
+     * @param userId User ID to get transactions for
+     * @return List of transactions for the specified user
+     */
+    public static List<Transactions> viewUserAll(int userId) {
+        if (userId <= 0) {
+            System.err.println("Invalid user ID");
+            return new ArrayList<>();
+        }
+
+        List<Transactions> transactionList = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(
+                     "SELECT * FROM transaction WHERE account_id = ? ORDER BY date DESC")) {
+
+            pstmt.setInt(1, userId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Transactions transaction = mapResultSetToTransaction(rs);
+                    transactionList.add(transaction);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving user transactions: " + e.getMessage());
+        }
+
+        return transactionList;
+    }
+
+    /**
+     * View a specific transaction by ID
+     * @param transactionId Transaction ID to retrieve
+     * @return The transaction or null if not found
+     */
+    public static Transactions viewTransaction(int transactionId) {
+        if (transactionId <= 0) {
+            System.err.println("Invalid transaction ID");
+            return null;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(
+                     "SELECT * FROM transaction WHERE id = ?")) {
+
+            pstmt.setInt(1, transactionId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToTransaction(rs);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving transaction: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Helper method to map ResultSet to Transaction object
+     * @param rs ResultSet containing transaction data
+     * @return Mapped Transaction object
+     * @throws SQLException If a database error occurs
+     */
+    private static Transactions mapResultSetToTransaction(ResultSet rs) throws SQLException {
+        LocalDateTime date = rs.getTimestamp("date").toLocalDateTime();
+
+        Integer transferToID = rs.getObject("transferToID", Integer.class);
+        Integer transferFromID = rs.getObject("transferFromID", Integer.class);
+
+        return new Transactions(
+                rs.getInt("id"),
+                rs.getDouble("amount"),
+                rs.getString("name"),
+                rs.getInt("account_id"),
+                date,
+                transferToID,
+                transferFromID
+        );
     }
 }
