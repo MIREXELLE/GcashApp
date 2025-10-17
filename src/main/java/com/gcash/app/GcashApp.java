@@ -11,6 +11,11 @@ import com.gcash.app.Security.SessionManager;
 import com.gcash.app.Service.TransactionService;
 import com.gcash.app.Service.BalanceService;
 
+/**
+ * GcashApp - A simple banking application
+ * Integrates all features: user authentication, balance checking, cash-in,
+ * fund transfers, and transaction history
+ */
 public class GcashApp {
     private static final UserAuthentication auth = new UserAuthentication();
     private static final Scanner scanner = new Scanner(System.in);
@@ -18,86 +23,127 @@ public class GcashApp {
 
     public static void main(String[] args) {
         System.out.println("Welcome to GCash App!");
+        System.out.println("---------------------");
+        System.out.println("© 2025 GCash Banking Services");
+        System.out.println("Version 1.0");
 
+        // Main application loop
         while (true) {
             if (currentUserId == -1) {
-                // Not logged in
+                // Not logged in - show main menu
                 showMainMenu();
             } else {
-                // Logged in
+                // Logged in - show user menu
                 showLoggedInMenu();
             }
         }
     }
 
+    /**
+     * Displays the main menu for non-logged in users
+     */
     private static void showMainMenu() {
-        System.out.println("\nPlease select an option:");
+        System.out.println("\nMain Menu:");
+        System.out.println("---------");
         System.out.println("1. Register");
         System.out.println("2. Login");
         System.out.println("3. Exit");
         System.out.print("Choice: ");
 
-        int choice = scanner.nextInt();
-        scanner.nextLine(); // Clear the newline
+        try {
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Clear the newline
 
-        switch (choice) {
-            case 1:
-                registerUser();
-                break;
-            case 2:
-                loginUser();
-                break;
-            case 3:
-                System.out.println("Thank you for using GCash App. Goodbye!");
-                System.exit(0);
-                break;
-            default:
-                System.out.println("Invalid choice. Please try again.");
+            switch (choice) {
+                case 1:
+                    registerUser();
+                    break;
+                case 2:
+                    loginUser();
+                    break;
+                case 3:
+                    System.out.println("\nThank you for using GCash App. Goodbye!");
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid input. Please enter a number.");
+            scanner.nextLine(); // Clear the invalid input
         }
     }
 
+    /**
+     * Displays the menu for logged-in users with all available operations
+     */
     private static void showLoggedInMenu() {
+        // Verify session is still valid
+        if (!SessionManager.isSessionValid(currentUserId)) {
+            System.out.println("\nYour session has expired. Please login again.");
+            currentUserId = -1;
+            return;
+        }
+
         System.out.println("\nUser Menu (ID: " + currentUserId + ")");
-        System.out.println("1. Change PIN");
-        System.out.println("2. Check Balance");
-        System.out.println("3. Cash In");
-        System.out.println("4. Cash Transfer");
-        System.out.println("5. View Transactions");
+        System.out.println("------------------");
+        System.out.println("1. Check Balance");
+        System.out.println("2. Cash In");
+        System.out.println("3. Transfer Funds");
+        System.out.println("4. View Transactions");
+        System.out.println("5. Change PIN");
         System.out.println("6. Logout");
         System.out.println("7. Exit");
         System.out.print("Choice: ");
 
-        int choice = scanner.nextInt();
-        scanner.nextLine(); // Clear the newline
+        try {
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Clear the newline
 
-        switch (choice) {
-            case 1:
-                changeUserPin();
-                break;
-            case 2:
-                checkUserBalance();
-                break;
-            case 3:
-                cashInFunds();
-                break;
-            case 4:
-                transferFunds();
-                break;
-            case 5:
-                viewTransactionsMenu();
-                break;
-            case 6:
-                logoutUser();
-                break;
-            case 7:
-                System.out.println("Thank you for using GCash App. Goodbye!");
-                System.exit(0);
-                break;
-            default:
-                System.out.println("Invalid choice. Please try again.");
+            switch (choice) {
+                case 1:
+                    checkUserBalance();
+                    break;
+                case 2:
+                    cashInFunds();
+                    break;
+                case 3:
+                    transferFunds();
+                    break;
+                case 4:
+                    viewTransactionsMenu();
+                    break;
+                case 5:
+                    changeUserPin();
+                    break;
+                case 6:
+                    logoutUser();
+                    break;
+                case 7:
+                    System.out.println("\nThank you for using GCash App. Goodbye!");
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+
+            // Ask if user wants another transaction
+            if (currentUserId != -1) { // Only if still logged in
+                System.out.print("\nWould you like another transaction? (Y/N): ");
+                String anotherTransaction = scanner.nextLine();
+                if (!anotherTransaction.equalsIgnoreCase("Y")) {
+                    logoutUser();
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid input. Please enter a number.");
+            scanner.nextLine(); // Clear the invalid input
         }
     }
 
+    /**
+     * Register a new user
+     */
     private static void registerUser() {
         System.out.println("\n=== User Registration ===");
 
@@ -123,6 +169,9 @@ public class GcashApp {
         }
     }
 
+    /**
+     * Login a user
+     */
     private static void loginUser() {
         System.out.println("\n=== User Login ===");
 
@@ -142,6 +191,9 @@ public class GcashApp {
         }
     }
 
+    /**
+     * Change user's PIN
+     */
     private static void changeUserPin() {
         System.out.println("\n=== Change PIN ===");
 
@@ -168,15 +220,11 @@ public class GcashApp {
         }
     }
 
+    /**
+     * Check user's account balance
+     */
     private static void checkUserBalance() {
         System.out.println("\n=== Check Balance ===");
-
-        // Verify if the session is valid
-        if (!SessionManager.isSessionValid(currentUserId)) {
-            System.out.println("Your session has expired. Please login again.");
-            currentUserId = -1;
-            return;
-        }
 
         CheckBalance balance = BalanceService.checkBalance(currentUserId);
 
@@ -187,41 +235,40 @@ public class GcashApp {
         }
     }
 
+    /**
+     * Add funds to user's account
+     */
     private static void cashInFunds() {
         System.out.println("\n=== Cash In ===");
 
         System.out.print("Enter amount to add: ");
-        double amount = scanner.nextDouble();
-        scanner.nextLine(); // Clear the newline
+        try {
+            double amount = scanner.nextDouble();
+            scanner.nextLine(); // Clear the newline
 
-        if (amount <= 0) {
-            System.out.println("Invalid amount. Please enter a positive number.");
-            return;
-        }
+            if (amount <= 0) {
+                System.out.println("Invalid amount. Please enter a positive number.");
+                return;
+            }
 
-        boolean success = TransactionService.cashin(amount, currentUserId);
+            boolean success = TransactionService.cashin(amount, currentUserId);
 
-        if (success) {
-            System.out.println("Cash-in successful! ₱" + String.format("%.2f", amount) + " has been added to your account.");
-        } else {
-            System.out.println("Cash-in failed. Please try again later.");
-        }
-
-        // Testing with fixed amounts as per the job sheet
-        if (amount == 200 || amount == 300) {
-            System.out.println("Test transaction with amount " + amount + " completed successfully.");
+            if (success) {
+                System.out.println("Cash-in successful! ₱" + String.format("%.2f", amount) + " has been added to your account.");
+            } else {
+                System.out.println("Cash-in failed. Please try again later.");
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid amount. Please enter a valid number.");
+            scanner.nextLine(); // Clear invalid input
         }
     }
 
+    /**
+     * Transfer funds to another user
+     */
     private static void transferFunds() {
         System.out.println("\n=== Cash Transfer ===");
-
-        // Verify if the session is valid
-        if (!SessionManager.isSessionValid(currentUserId)) {
-            System.out.println("Your session has expired. Please login again.");
-            currentUserId = -1;
-            return;
-        }
 
         // Check balance first
         CheckBalance balance = BalanceService.checkBalance(currentUserId);
@@ -234,100 +281,105 @@ public class GcashApp {
 
         // Get recipient user ID
         System.out.print("Enter recipient user ID: ");
-        int recipientId = scanner.nextInt();
-        scanner.nextLine(); // Clear the newline
+        try {
+            int recipientId = scanner.nextInt();
+            scanner.nextLine(); // Clear the newline
 
-        if (recipientId == currentUserId) {
-            System.out.println("You cannot transfer money to yourself.");
-            return;
-        }
+            if (recipientId == currentUserId) {
+                System.out.println("You cannot transfer money to yourself.");
+                return;
+            }
 
-        // Get amount to transfer
-        System.out.print("Enter amount to transfer: ");
-        double amount = scanner.nextDouble();
-        scanner.nextLine(); // Clear the newline
+            // Get amount to transfer
+            System.out.print("Enter amount to transfer: ");
+            double amount = scanner.nextDouble();
+            scanner.nextLine(); // Clear the newline
 
-        // Validate amount
-        if (amount <= 0) {
-            System.out.println("Invalid amount. Please enter a positive number.");
-            return;
-        }
+            // Validate amount
+            if (amount <= 0) {
+                System.out.println("Invalid amount. Please enter a positive number.");
+                return;
+            }
 
-        if (amount > balance.getAmount()) {
-            System.out.println("Insufficient funds. Transfer cancelled.");
-            return;
-        }
+            if (amount > balance.getAmount()) {
+                System.out.println("Insufficient funds. Transfer cancelled.");
+                return;
+            }
 
-        // Confirm transfer
-        System.out.println("\nTransfer Details:");
-        System.out.println("Recipient: User #" + recipientId);
-        System.out.println("Amount: ₱" + String.format("%.2f", amount));
-        System.out.print("Confirm transfer (Y/N): ");
-        String confirm = scanner.nextLine();
+            // Confirm transfer
+            System.out.println("\nTransfer Details:");
+            System.out.println("Recipient: User #" + recipientId);
+            System.out.println("Amount: ₱" + String.format("%.2f", amount));
+            System.out.print("Confirm transfer (Y/N): ");
+            String confirm = scanner.nextLine();
 
-        if (!confirm.equalsIgnoreCase("Y")) {
-            System.out.println("Transfer cancelled.");
-            return;
-        }
+            if (!confirm.equalsIgnoreCase("Y")) {
+                System.out.println("Transfer cancelled.");
+                return;
+            }
 
-        // Process transfer
-        int result = TransactionService.cashTransfer(amount, currentUserId, recipientId);
+            // Process transfer
+            int result = TransactionService.cashTransfer(amount, currentUserId, recipientId);
 
-        switch (result) {
-            case 0:
-                System.out.println("Transfer successful! ₱" + String.format("%.2f", amount) +
-                        " has been sent to User #" + recipientId);
-                break;
-            case 1:
-                System.out.println("Insufficient funds. Transfer failed.");
-                break;
-            case 2:
-                System.out.println("Invalid recipient. User not found.");
-                break;
-            case 3:
-                System.out.println("Cannot transfer to yourself.");
-                break;
-            default:
-                System.out.println("Transfer failed due to a system error. Please try again later.");
+            switch (result) {
+                case 0:
+                    System.out.println("Transfer successful! ₱" + String.format("%.2f", amount) +
+                            " has been sent to User #" + recipientId);
+                    break;
+                case 1:
+                    System.out.println("Insufficient funds. Transfer failed.");
+                    break;
+                case 2:
+                    System.out.println("Invalid recipient. User not found.");
+                    break;
+                case 3:
+                    System.out.println("Cannot transfer to yourself.");
+                    break;
+                default:
+                    System.out.println("Transfer failed due to a system error. Please try again later.");
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid input. Please enter valid numbers.");
+            scanner.nextLine(); // Clear invalid input
         }
     }
 
+    /**
+     * Display transaction view options
+     */
     private static void viewTransactionsMenu() {
         System.out.println("\n=== View Transactions ===");
 
-        // Verify if the session is valid
-        if (!SessionManager.isSessionValid(currentUserId)) {
-            System.out.println("Your session has expired. Please login again.");
-            currentUserId = -1;
-            return;
-        }
-
         System.out.println("1. View My Transactions");
         System.out.println("2. View Specific Transaction");
-        System.out.println("3. View All Transactions (Admin)");
-        System.out.println("4. Back to Main Menu");
+        System.out.println("3. Back");
         System.out.print("Choice: ");
 
-        int choice = scanner.nextInt();
-        scanner.nextLine(); // Clear the newline
+        try {
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Clear the newline
 
-        switch (choice) {
-            case 1:
-                viewUserTransactions();
-                break;
-            case 2:
-                viewSpecificTransaction();
-                break;
-            case 3:
-                viewAllTransactions();
-                break;
-            case 4:
-                return;
-            default:
-                System.out.println("Invalid choice. Please try again.");
+            switch (choice) {
+                case 1:
+                    viewUserTransactions();
+                    break;
+                case 2:
+                    viewSpecificTransaction();
+                    break;
+                case 3:
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid input. Please enter a number.");
+            scanner.nextLine(); // Clear invalid input
         }
     }
 
+    /**
+     * View all transactions for the current user
+     */
     private static void viewUserTransactions() {
         System.out.println("\n=== My Transactions ===");
 
@@ -339,66 +391,52 @@ public class GcashApp {
         }
 
         System.out.println("Your transaction history:");
+        System.out.println("------------------------");
         for (Transactions t : transactions) {
             System.out.println(t.toString());
         }
     }
 
+    /**
+     * View a specific transaction by ID
+     */
     private static void viewSpecificTransaction() {
         System.out.println("\n=== View Specific Transaction ===");
 
         System.out.print("Enter transaction ID: ");
-        int transactionId = scanner.nextInt();
-        scanner.nextLine(); // Clear the newline
+        try {
+            int transactionId = scanner.nextInt();
+            scanner.nextLine(); // Clear the newline
 
-        Transactions transaction = TransactionService.viewTransaction(transactionId);
+            Transactions transaction = TransactionService.viewTransaction(transactionId);
 
-        if (transaction == null) {
-            System.out.println("Transaction not found.");
-            return;
-        }
+            if (transaction == null) {
+                System.out.println("Transaction not found.");
+                return;
+            }
 
-        // Check if the transaction belongs to the current user
-        if (transaction.getAccount_id() != currentUserId) {
-            System.out.println("You can only view your own transactions.");
-            return;
-        }
+            // Check if the transaction belongs to the current user
+            if (transaction.getAccount_id() != currentUserId) {
+                System.out.println("You can only view your own transactions.");
+                return;
+            }
 
-        System.out.println("Transaction details:");
-        System.out.println(transaction.toString());
-    }
-
-    private static void viewAllTransactions() {
-        System.out.println("\n=== All Transactions (Admin View) ===");
-
-        // In a real app, you would check if the user has admin privileges
-        // For this example, we'll just show a warning
-        System.out.println("WARNING: This is an administrative function");
-        System.out.print("Enter admin password: ");
-        String password = scanner.nextLine();
-
-        // Simple admin check - in a real app this would be more secure
-        if (!password.equals("admin")) {
-            System.out.println("Access denied.");
-            return;
-        }
-
-        List<Transactions> transactions = TransactionService.viewAll();
-
-        if (transactions.isEmpty()) {
-            System.out.println("No transactions found in the system.");
-            return;
-        }
-
-        System.out.println("All transactions in the system:");
-        for (Transactions t : transactions) {
-            System.out.println(t.toString());
+            System.out.println("Transaction details:");
+            System.out.println("-------------------");
+            System.out.println(transaction.toString());
+        } catch (Exception e) {
+            System.out.println("Invalid input. Please enter a valid transaction ID.");
+            scanner.nextLine(); // Clear invalid input
         }
     }
 
+    /**
+     * Logout the current user
+     */
     private static void logoutUser() {
-        if (auth.logout(currentUserId)) {
-            System.out.println("Logout successful.");
+        // Use SessionManager to invalidate the session
+        if (SessionManager.invalidateSession(currentUserId)) {
+            System.out.println("Logout successful. Thank you for using GCash App!");
             currentUserId = -1;
         } else {
             System.out.println("Logout failed.");
