@@ -59,8 +59,9 @@ public class GcashApp {
         System.out.println("1. Change PIN");
         System.out.println("2. Check Balance");
         System.out.println("3. Cash In");
-        System.out.println("4. Logout");
-        System.out.println("5. Exit");
+        System.out.println("4. Cash Transfer");
+        System.out.println("5. Logout");
+        System.out.println("6. Exit");
         System.out.print("Choice: ");
 
         int choice = scanner.nextInt();
@@ -77,9 +78,12 @@ public class GcashApp {
                 cashInFunds();
                 break;
             case 4:
-                logoutUser();
+                transferFunds();
                 break;
             case 5:
+                logoutUser();
+                break;
+            case 6:
                 System.out.println("Thank you for using GCash App. Goodbye!");
                 System.exit(0);
                 break;
@@ -200,6 +204,85 @@ public class GcashApp {
         // Testing with fixed amounts as per the job sheet
         if (amount == 200 || amount == 300) {
             System.out.println("Test transaction with amount " + amount + " completed successfully.");
+        }
+    }
+
+    private static void transferFunds() {
+        System.out.println("\n=== Cash Transfer ===");
+
+        // Verify if the session is valid
+        if (!SessionManager.isSessionValid(currentUserId)) {
+            System.out.println("Your session has expired. Please login again.");
+            currentUserId = -1;
+            return;
+        }
+
+        // Check balance first
+        CheckBalance balance = BalanceService.checkBalance(currentUserId);
+        if (balance == null) {
+            System.out.println("Unable to retrieve your balance. Transfer cancelled.");
+            return;
+        }
+
+        System.out.println("Your current balance: ₱" + String.format("%.2f", balance.getAmount()));
+
+        // Get recipient user ID
+        System.out.print("Enter recipient user ID: ");
+        int recipientId = scanner.nextInt();
+        scanner.nextLine(); // Clear the newline
+
+        if (recipientId == currentUserId) {
+            System.out.println("You cannot transfer money to yourself.");
+            return;
+        }
+
+        // Get amount to transfer
+        System.out.print("Enter amount to transfer: ");
+        double amount = scanner.nextDouble();
+        scanner.nextLine(); // Clear the newline
+
+        // Validate amount
+        if (amount <= 0) {
+            System.out.println("Invalid amount. Please enter a positive number.");
+            return;
+        }
+
+        if (amount > balance.getAmount()) {
+            System.out.println("Insufficient funds. Transfer cancelled.");
+            return;
+        }
+
+        // Confirm transfer
+        System.out.println("\nTransfer Details:");
+        System.out.println("Recipient: User #" + recipientId);
+        System.out.println("Amount: ₱" + String.format("%.2f", amount));
+        System.out.print("Confirm transfer (Y/N): ");
+        String confirm = scanner.nextLine();
+
+        if (!confirm.equalsIgnoreCase("Y")) {
+            System.out.println("Transfer cancelled.");
+            return;
+        }
+
+        // Process transfer
+        int result = TransactionService.cashTransfer(amount, currentUserId, recipientId);
+
+        switch (result) {
+            case 0:
+                System.out.println("Transfer successful! ₱" + String.format("%.2f", amount) +
+                        " has been sent to User #" + recipientId);
+                break;
+            case 1:
+                System.out.println("Insufficient funds. Transfer failed.");
+                break;
+            case 2:
+                System.out.println("Invalid recipient. User not found.");
+                break;
+            case 3:
+                System.out.println("Cannot transfer to yourself.");
+                break;
+            default:
+                System.out.println("Transfer failed due to a system error. Please try again later.");
         }
     }
 
